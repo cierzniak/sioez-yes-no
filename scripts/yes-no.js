@@ -1,4 +1,26 @@
-const createButton = (className = '') => {
+const findResultPrefixes = (node) => [
+  ...new Set(
+    Array
+      .from(node.querySelectorAll('label'))
+      .map(l => l.textContent.trim())
+      .filter(l => /[PR]\d+_\d+/.test(l))
+      .map(l => l.split('_')[0])
+  )
+];
+
+const clickRadiosInContainers = (nodes, selector) => {
+  const nodeList = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
+  nodeList.forEach(node => {
+    node.querySelectorAll(selector).forEach(i => {
+      const input = i.querySelector('input');
+      if (input?.click) {
+        input.click();
+      }
+    });
+  });
+};
+
+const createButton = (className = '', callback = undefined) => {
   const outerDiv = document.createElement('div');
   outerDiv.className = `radio ${className}`;
 
@@ -9,9 +31,9 @@ const createButton = (className = '') => {
   input.type = 'radio';
   input.className = 'customRadioButton';
   input.onclick = (e) => {
-    document.querySelectorAll(`.radio.${className}`).forEach((f) => {
-      f.querySelector('input').click();
-    });
+    if (callback) {
+      callback();
+    }
     setTimeout(() => {
       e.target.checked = false;
     }, 400);
@@ -21,28 +43,70 @@ const createButton = (className = '') => {
   outerDiv.appendChild(innerDiv);
 
   return outerDiv;
-}
+};
+
+const createContainer = (result, children) => {
+  const elements = document.createElement('div');
+  elements.id = `mass-toggle-container${result === '' ? '' : '-'}${result}`;
+  elements.style = 'display: flex; border: 2px solid limegreen; height: 2.5rem; margin: 1.1rem 0 0.4rem;';
+
+  const fragment = document.createDocumentFragment();
+
+  const label = document.createElement('label');
+  fragment.appendChild(label);
+
+  children.forEach(child => fragment.appendChild(child));
+
+  const info = document.createElement('div');
+  info.innerHTML = result === '' ? 'Wszystkie<br/>rezultaty' : `<br/>Rezultat&nbsp;${result}`;
+  info.style = 'font-size: 0.7rem;';
+  fragment.appendChild(info);
+
+  elements.appendChild(fragment);
+
+  return elements;
+};
+
+const removeHorizontalLines = (node) => {
+  node.querySelectorAll('hr').forEach((el) => el.remove());
+};
+
+const addGlobalYesNo = (node) => {
+  node.prepend(createContainer('', [
+    createButton('yes', () => clickRadiosInContainers(document, '.radio.yes')),
+    createButton('no', () => clickRadiosInContainers(document, '.radio.no')),
+  ]));
+};
+
+const addLocalYesNo = (prefix) => {
+  const inputs = Array.from(document.querySelectorAll(`input[name^="${prefix}_"]`));
+  if (inputs.length === 0) {
+    return;
+  }
+
+  const parentDivs = [...new Set(inputs.map(i => i.closest('div[style*="display:block"]')).filter(Boolean))];
+
+  const controlContainer = createContainer(prefix, [
+    createButton('yes', () => clickRadiosInContainers(parentDivs, '.radio.yes')),
+    createButton('no', () => clickRadiosInContainers(parentDivs, '.radio.no')),
+  ]);
+
+  const wrapper = inputs[0].closest('div[style*="display:block"]') || inputs[0].closest('div');
+  if (wrapper && wrapper.parentNode) {
+    wrapper.parentNode.insertBefore(controlContainer, wrapper);
+  }
+};
 
 const runCommand = () => {
   if (document.querySelector('#mass-toggle-container')) {
     return;
   }
 
-  const container = document.createElement('div');
-  container.id = 'mass-toggle-container';
-  container.style = 'display: flex; border: 2px solid limegreen; height: 2.5rem;';
-  container.appendChild(document.createElement('label'));
-  container.appendChild(createButton('yes'));
-  container.appendChild(createButton('no'));
-
-  const info = document.createElement('div');
-  info.textContent = 'Wszystkie rezultaty';
-  info.style = 'font-size: 0.7rem;';
-  container.appendChild(info);
-
   const content = document.querySelector('#content');
   if (content) {
-    content.prepend(container);
+    removeHorizontalLines(content);
+    addGlobalYesNo(content);
+    findResultPrefixes(content).forEach((prefix) => addLocalYesNo(prefix));
   }
 };
 
