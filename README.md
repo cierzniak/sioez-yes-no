@@ -2,7 +2,7 @@
 
 Wtyczka do przeglądarek opartych o Chromium (Chrome, Edge, Brave) do automatycznego klikania Tak/Nie na stronie SIOEZ.
 
-Testowane na SIOEZ w wersji `3.131.5`.
+Testowane na SIOEZ w wersji `3.131.8`.
 
 ## Sposób instalacji
 

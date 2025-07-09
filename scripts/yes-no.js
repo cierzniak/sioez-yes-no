@@ -124,7 +124,11 @@ const waitForModal = () => {
       };
 
       if (confirmBtn) {
-        confirmBtn.addEventListener('click', handleClose, {once: true});
+        confirmBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('[id^="mass-toggle-container"]').forEach(el => el.remove());
+          setTimeout(() => confirmBtn.click(), 50);
+        }, {once: true});
       }
       if (cancelBtn) {
         cancelBtn.addEventListener('click', handleClose, {once: true});
