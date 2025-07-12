@@ -74,7 +74,7 @@ const addGlobalYesNo = (node) => {
 };
 
 const addLocalYesNo = (node, prefix) => {
-  const inputs = Array.from(node.querySelectorAll(`input[name^="${prefix}_"]`));
+  const inputs = Array.from(node.querySelectorAll(`input[name^="${prefix}_"], input[name^="SE${prefix}_"], input[name^="L${prefix}_"]`));
   if (inputs.length === 0) {
     return;
   }

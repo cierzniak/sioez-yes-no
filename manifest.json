@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "SIOEZ Tak/Nie",
   "description": "Masowe ustawianie Tak/Nie w portalu SIOEZ",
-  "version": "2025.07.12.01",
+  "version": "2025.07.12.02",
   "icons": {
     "16": "assets/icon-16.png",
     "32": "assets/icon-32.png",
