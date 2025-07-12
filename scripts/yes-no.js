@@ -1,3 +1,5 @@
+const findSections = (node) => node.querySelectorAll('#content');
+
 const findResultPrefixes = (node) => [
   ...new Set(
     Array
@@ -10,14 +12,7 @@ const findResultPrefixes = (node) => [
 
 const clickRadiosInContainers = (nodes, selector) => {
   const nodeList = Array.isArray(nodes) || nodes instanceof NodeList ? nodes : [nodes];
-  nodeList.forEach(node => {
-    node.querySelectorAll(selector).forEach(i => {
-      const input = i.querySelector('input');
-      if (input?.click) {
-        input.click();
-      }
-    });
-  });
+  nodeList.forEach(node => node.querySelectorAll(selector).forEach(i => i.querySelector('input')?.click()));
 };
 
 const createButton = (className = '', callback = undefined) => {
@@ -73,13 +68,13 @@ const removeHorizontalLines = (node) => {
 
 const addGlobalYesNo = (node) => {
   node.prepend(createContainer('', [
-    createButton('yes', () => clickRadiosInContainers(document, '.radio.yes')),
-    createButton('no', () => clickRadiosInContainers(document, '.radio.no')),
+    createButton('yes', () => clickRadiosInContainers(node, '.radio.yes')),
+    createButton('no', () => clickRadiosInContainers(node, '.radio.no')),
   ]));
 };
 
-const addLocalYesNo = (prefix) => {
-  const inputs = Array.from(document.querySelectorAll(`input[name^="${prefix}_"]`));
+const addLocalYesNo = (node, prefix) => {
+  const inputs = Array.from(node.querySelectorAll(`input[name^="${prefix}_"]`));
   if (inputs.length === 0) {
     return;
   }
@@ -97,43 +92,32 @@ const addLocalYesNo = (prefix) => {
   }
 };
 
-const runCommand = () => {
+const runCommand = (formContainer) => {
   if (document.querySelector('#mass-toggle-container')) {
     return;
   }
 
-  const content = document.querySelector('#content');
-  if (content) {
-    removeHorizontalLines(content);
-    addGlobalYesNo(content);
-    findResultPrefixes(content).forEach((prefix) => addLocalYesNo(prefix));
-  }
+  removeHorizontalLines(formContainer);
+  findSections(formContainer).forEach((section) => addGlobalYesNo(section));
+  findSections(formContainer).forEach((section) => findResultPrefixes(section).forEach((prefix) => addLocalYesNo(section, prefix)));
 };
 
 const waitForModal = () => {
   const observer = new MutationObserver(() => {
-    if (document.body.classList.contains('modal-open')) {
-      runCommand();
-      observer.disconnect();
-
-      const confirmBtn = document.querySelector('.btn-custom-save');
-      const cancelBtn = document.querySelector('.btn-custom-return');
-
-      const handleClose = () => {
-        waitForModal();
-      };
-
-      if (confirmBtn) {
-        confirmBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          document.querySelectorAll('[id^="mass-toggle-container"]').forEach(el => el.remove());
-          setTimeout(() => confirmBtn.click(), 50);
-        }, {once: true});
-      }
-      if (cancelBtn) {
-        cancelBtn.addEventListener('click', handleClose, {once: true});
-      }
+    const form = document.querySelector('#CandidatePracticeResultAddForm');
+    if (false === (document.body.classList.contains('modal-open') && form)) {
+      return;
     }
+
+    runCommand(form);
+    observer.disconnect();
+
+    form.querySelector('.btn-custom-save')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      form.querySelectorAll('[id^="mass-toggle-container"]').forEach((el) => el.remove());
+    }, {once: true});
+
+    form.querySelector('.btn-custom-return')?.addEventListener('click', waitForModal, {once: true});
   });
 
   observer.observe(document.body, {childList: true, subtree: true});
