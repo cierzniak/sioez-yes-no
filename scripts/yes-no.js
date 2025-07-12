@@ -97,6 +97,11 @@ const runCommand = (formContainer) => {
     return;
   }
 
+  const modal = document.querySelector('.modal-body');
+  if (modal) {
+    modal.style.maxHeight = '80vh';
+  }
+
   removeHorizontalLines(formContainer);
   findSections(formContainer).forEach((section) => addGlobalYesNo(section));
   findSections(formContainer).forEach((section) => findResultPrefixes(section).forEach((prefix) => addLocalYesNo(section, prefix)));
