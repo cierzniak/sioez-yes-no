@@ -115,7 +115,12 @@ const waitForModal = () => {
     form.querySelector('.btn-custom-save')?.addEventListener('click', (e) => {
       e.preventDefault();
       form.querySelectorAll('[id^="mass-toggle-container"]').forEach((el) => el.remove());
-    }, {once: true});
+    });
+
+    document.querySelector('#PrettyAlertOk')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      runCommand(form);
+    });
 
     form.querySelector('.btn-custom-return')?.addEventListener('click', waitForModal, {once: true});
   });
