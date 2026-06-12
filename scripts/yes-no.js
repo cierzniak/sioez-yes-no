@@ -1,3 +1,6 @@
+const FORM_SELECTOR = '#CandidatePracticeResultAddForm, #CandidateExaminerPracticePrwResultAddForm';
+const SAVE_BUTTON_SELECTOR = '.btn-custom-save, #submitExaminerPrw';
+
 const findSections = (node) => node.querySelectorAll('#content');
 
 const findResultPrefixes = (node) => [
@@ -109,7 +112,7 @@ const runCommand = (formContainer) => {
 
 const waitForModal = () => {
   const observer = new MutationObserver(() => {
-    const form = document.querySelector('#CandidatePracticeResultAddForm');
+    const form = document.querySelector(FORM_SELECTOR);
     if (false === (document.body.classList.contains('modal-open') && form)) {
       return;
     }
@@ -117,7 +120,7 @@ const waitForModal = () => {
     runCommand(form);
     observer.disconnect();
 
-    form.querySelector('.btn-custom-save')?.addEventListener('click', (e) => {
+    form.querySelector(SAVE_BUTTON_SELECTOR)?.addEventListener('click', (e) => {
       e.preventDefault();
       form.querySelectorAll('[id^="mass-toggle-container"]').forEach((el) => el.remove());
     });
