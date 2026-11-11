@@ -1,0 +1,5 @@
+.DS_Store
+.idea/
+__ignore/
+node_modules/
+*.zip

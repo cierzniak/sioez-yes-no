@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  # Każda nowa wersja w manifest.json na main = Release z gotowym ZIP-em do „Wczytaj rozpakowany”.
+  release:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Wydaj wersję z manifest.json, jeśli jeszcze nie istnieje
+        run: |
+          version=$(jq -r .version manifest.json)
+          if gh release view "v$version" >/dev/null 2>&1; then
+            echo "v$version już wydana"
+            exit 0
+          fi
+          zip -r "sioez-yes-no-$version.zip" manifest.json scripts assets
+          gh release create "v$version" "sioez-yes-no-$version.zip" --target "$GITHUB_SHA" --title "v$version" --generate-notes
